@@ -49,6 +49,7 @@ public:
 	virtual void OnInitialUpdate();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnErase();
 };
 
 #ifndef _DEBUG  // Task2_1View.cpp 中的调试版本

@@ -3,6 +3,9 @@
 //
 
 #include "stdafx.h"
+#include <atlstr.h>
+#include <iostream>
+#include<cmath>
 // SHARED_HANDLERS 可以在实现预览、缩略图和搜索筛选器句柄的
 // ATL 项目中进行定义，并允许与该项目共享文档代码。
 #ifndef SHARED_HANDLERS
@@ -11,13 +14,19 @@
 
 #include "Task2_1Doc.h"
 #include "Task2_1View.h"
-
+#include <string>
+#include <vector>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-
+using namespace std;
+vector<CPoint>listPoint;
+CPoint cpoint;
+CPoint firstpoint;
+int sum = 0;
+int dis = 0;
 // CTask21View
+
 
 IMPLEMENT_DYNCREATE(CTask21View, CView)
 
@@ -30,6 +39,7 @@ BEGIN_MESSAGE_MAP(CTask21View, CView)
 	ON_WM_DESTROY()
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
+	ON_COMMAND(ID_32771, &CTask21View::OnErase)
 END_MESSAGE_MAP()
 
 // CTask21View 构造/析构
@@ -185,10 +195,38 @@ void CTask21View::OnSize(UINT nType, int cx, int cy)
 	gluLookAt(0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	// TODO: 在此处添加消息处理程序代码
 }
+
 void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	
+	// 暂存的点
+	CPoint tempPoint=cpoint;
+	cpoint = point;
 	CDC*pDC = GetDC();
 	pDC->SetPixel(point, RGB(0, 0, 0));
+	if (sum != 0)
+	{
+		pDC->MoveTo(tempPoint.x, tempPoint.y);
+		pDC->LineTo(cpoint.x, cpoint.y);
+	}
+	else
+	{
+		// 记录第一个点
+		firstpoint = point;
+	}
+	dis = sqrt((firstpoint.x - cpoint.x)*(firstpoint.x - cpoint.x) + (firstpoint.y - cpoint.y)*(firstpoint.y - cpoint.y));
+	if (dis < 100)
+	{
+		pDC->MoveTo(firstpoint.x, firstpoint.y);
+		pDC->LineTo(cpoint.x, cpoint.y);
+	}
+	sum++;
 	CView::OnLButtonDown(nFlags, point);
+}
+void CTask21View::OnErase()
+{
+	sum = 0;
+	Invalidate();
+	// TODO: 在此添加命令处理程序代码
 }
