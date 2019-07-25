@@ -92,7 +92,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,6 +190,7 @@
     <ClInclude Include="Task2_1.h" />
     <ClInclude Include="Task2_1Doc.h" />
     <ClInclude Include="Task2_1View.h" />
+    <ClInclude Include="test.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrm.cpp" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Task2_1.cpp" />
     <ClCompile Include="Task2_1Doc.cpp" />
     <ClCompile Include="Task2_1View.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Task21.rc" />
