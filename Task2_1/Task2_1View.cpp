@@ -476,12 +476,6 @@ void ModifyAET()
 					count++;
 				}
 				cout << "x1: " << x1 << " x2: " << x2 << " y: " << y<<" "<<endl;
-				/*while (x1 < x2)
-				{
-					glVertex2f(x1, y);
-					//IntePoint.push_back(CPoint(x1, y));
-					x1++;
-				}*/
 			}	
 		}
 		y++;
@@ -698,13 +692,6 @@ void ModifyXAET()
 					IntePoint.insert(pair<int, vector<MyPoint>>(count, listp));
 					count++;
 				}
-				//cout << "x: " << x << " y1: " << y1 << " y2: " << y2 << " " << endl;
-				/*while (x1 < x2)
-				{
-					glVertex2f(x1, y);
-					//IntePoint.push_back(CPoint(x1, y));
-					x1++;
-				}*/
 			}
 		}
 		x++;
