@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include <atlstr.h>
 #include <iostream>
+#include "SelectDialog.h"
 #include<cmath>
 // SHARED_HANDLERS 可以在实现预览、缩略图和搜索筛选器句柄的
 // ATL 项目中进行定义，并允许与该项目共享文档代码。
@@ -31,12 +32,22 @@ CPoint cpoint;
 CPoint firstpoint;
 int sum = 0;
 int dis = 0;
+// y最大值
 int YMAX=0;
+// x最大值
+int XMAX = 0;
+// 间距
+int spaceBetween=0;
+// 条数
+int countLine=0;
 void InitConsoleWindow();
 void GetNET();
 // 更新ET，将特殊点进行特殊处理
 void UpdateET();
 void ModifyAET();
+void ModifyXAET();
+void UpdateXET();
+void GetNetY();
 struct MyPoint
 {
 	float x;
@@ -46,7 +57,6 @@ struct MyPoint
 		this->x = x1;
 		this->y = y;
 	}
-	
 };
 // 交点
 map<int,vector<MyPoint>>IntePoint;
@@ -70,8 +80,29 @@ bool tagEDGE::operator<(tagEDGE &e)
 	if (dx > 0 && e.dx < 0)	return false;
 	return dx * ymax < e.dx*e.ymax;
 }
+
+// 边的数据结构体
+typedef struct tagEDGEX
+{
+	int xmax;   // 边的最大x坐标
+	float yi;  // 与扫描线交点y坐标
+	float dy;   //  斜率的倒数，dx
+	tagEDGEX(float my, float mx, float mdx) :xmax(my), yi(mx), dy(mdx) {}
+	bool operator<(tagEDGEX &e);
+}EDGEX;
+bool tagEDGEX::operator<(tagEDGEX &e)
+{
+	if (yi != e.yi)
+		return yi < e.yi;
+	if (dy == 0)	return e.dy > 0;
+	if (e.dy == 0)	return dy < 0;
+	if (dy < 0 && e.dy>0)	return true;
+	if (dy > 0 && e.dy < 0)	return false;
+	return dy * xmax < e.dy*e.xmax;
+}
 // 边表
 map<int, list<EDGE>>ET;
+map<int, list<EDGEX>>ETX;
 // int 表示序号，Edge表示结构体
 IMPLEMENT_DYNCREATE(CTask21View, CView)
 BEGIN_MESSAGE_MAP(CTask21View, CView)
@@ -182,8 +213,6 @@ bool CTask21View::setPixelFormat()
 	return SetPixelFormat(m_pDC->GetSafeHdc(), pixelformat, &pfd);
 	return false;
 }
-
-
 int CTask21View::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CView::OnCreate(lpCreateStruct) == -1)
@@ -296,17 +325,21 @@ void CTask21View::OnErase()
 	sum = 0;
 	map<int, vector<MyPoint>>IntePoint1;
 	map<int, list<EDGE>>ET1;
+	map<int, list<EDGEX>>ET2;
 	vector<CPoint>listPoint1;
 	IntePoint=IntePoint1;
 	listPoint = listPoint1;
 	ET=ET1;
+	ETX = ET2;
 	YMAX = 0;
+	XMAX = 0;
 	cout << "ET " << ET.size() << endl;
+	cout << "ETX " << ETX.size() << endl;
 	cout << "listPoint " << listPoint.size() << endl;
 	Invalidate();
 	// TODO: 在此添加命令处理程序代码
 }
-// 初始化新边表结构
+// 初始化新边表结构,画横线
 void GetNET()
 {
 	
@@ -419,7 +452,6 @@ void ModifyAET()
 	cout << " YMAX IS " << YMAX <<" "<< endl;
 	AET.insert(AET.begin(), ET.begin()->second.begin(), ET.begin()->second.end());
 	AET.sort();
-	//glBegin(GL_POINTS);
 	do {
 		auto node = AET.begin();
 		while (node != AET.end())
@@ -466,9 +498,8 @@ void ModifyAET()
 		if (itt != ET.end())
 			AET.insert(AET.end(), ET[y].begin(), ET[y].end());
 		AET.sort();
-		// 判断有问题
+		// 如过y大于YMAX,直接退出
 	} while ((y<YMAX));
-	//glEnd();
 }
 void CTask21View::OnFilledWith()
 {
@@ -478,61 +509,218 @@ void CTask21View::OnFilledWith()
 	listPoint.push_back(CPoint(30, 40));
 	listPoint.push_back(CPoint(60, 80));
 	listPoint.push_back(CPoint(80, 40));*/
-
-	GetNET();
-	// 更新边表
-	UpdateET();
-
-	// 对AET表操作
-	ModifyAET();
-
-	CDC*pDC = GetDC();
 	AllocConsole();
-
-	freopen("CONOUT$", "w+t", stdout);// 申请写
-	cout << "大小 " << IntePoint.size() << endl;
-	for (auto it = IntePoint.begin();it != IntePoint.end();it++)
+	// 间距设置为4
+	SelectDialog selectDialog;
+	if (selectDialog.DoModal() == IDOK)
 	{
-		vector<MyPoint>list = it->second;
-
-		//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
-		//cout << "画线 " << list[0].x << " " << list[0].y<<" " << endl;
-		//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
-		pDC->MoveTo(list[0].x, list[0].y);
-		pDC->LineTo(list[1].x, list[1].y);
-	}
-	freopen("CONIN$", "r+t", stdin);  // 申请读
-/*
-	AllocConsole();
-	freopen("CONOUT$", "w+t", stdout);// 申请写
-
-	freopen("CONIN$", "r+t", stdin);  // 申请读
-*/
-	// 输出交点
-}
-// 进行填充
-void GetPolyFill()
-{
-	list<EDGE>ListEDGE;
-	int y = 0;
-	for (int i = 0;i < 100;i++)
-	{
-		// 初始化新边表
-		GetNET();
-		// 将i为ymin中的边表放入
-		auto it=ET.find(i);
-		if (it != ET.end())
+		spaceBetween = selectDialog.space;
+		if (selectDialog.checkbox1 == 1)
 		{
-			// 将i对应的边表中
-			ListEDGE = it->second;
-			// 第一条扫描线
-			y = i;
-			// 初始化活性边表AET为空
-			std::list<EDGE>AET;
-			// 将ListEDGE插入到AET中，并以x递增
-			AET = ListEDGE;
-			AET.sort();
+			GetNET();
+			UpdateET();
+			ModifyAET();
+			CDC*pDC = GetDC();
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "大小 " << IntePoint.size() << endl;
+			for (auto it = IntePoint.begin();it != IntePoint.end();it++)
+			{
+				vector<MyPoint>list = it->second;
+
+				//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
+				cout << "画线 " << list[0].x << " " << list[0].y << " " << endl;
+				//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
+				freopen("CONIN$", "r+t", stdin);  // 申请读
+
+				int flag = list[0].y;
+				if (flag % spaceBetween == 0)
+				{
+					pDC->MoveTo(list[0].x, list[0].y);
+					pDC->LineTo(list[1].x, list[1].y);
+				}
+			}
+		}
+		else
+		{
+			GetNetY();
+			// 更新边表
+
+			UpdateXET();
+			// 对AET表操作
+
+			ModifyXAET();
+
+			CDC*pDC = GetDC();
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "大小 " << IntePoint.size() << endl;
+			for (auto it = IntePoint.begin();it != IntePoint.end();it++)
+			{
+				vector<MyPoint>list = it->second;
+
+				//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
+				cout << "画线 " << list[0].x << " " << list[0].y << " " << endl;
+				//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
+				freopen("CONIN$", "r+t", stdin);  // 申请读
+
+				int flag = list[0].x;
+				if (flag % spaceBetween == 0)
+				{
+					pDC->MoveTo(list[0].x, list[0].y);
+					pDC->LineTo(list[1].x, list[1].y);
+				}
+
+			}
 		}
 
 	}
+
+}
+// 进行填充X轴
+// 画竖线
+void GetNetY()
+{
+	for (int i = 0;i < listPoint.size() - 1;i++)
+	{
+		// 平行边，这里确定是x,还是y????????
+		if (listPoint[i + 1].x == listPoint[i].x)
+			continue;
+		// 斜率的倒数
+		float dy = 0;
+		double a = listPoint[i + 1].y - listPoint[i].y;
+		if (a == 0)
+		{
+			dy = 0.0;
+		}
+		else
+		{
+			dy = 1.0/((listPoint[i + 1].x - listPoint[i].x)*1.0 / (listPoint[i + 1].y - listPoint[i].y));
+
+		}
+		// xi低端点的x值，x高端点的x值
+		float xmax, yi, xmin;
+		if (listPoint[i + 1].x> listPoint[i].x)
+		{
+			xmax = listPoint[i + 1].x;
+			xmin = listPoint[i].x;
+			yi = listPoint[i].y;
+		}
+		else
+		{
+			xmax = listPoint[i].x;
+			xmin = listPoint[i + 1].x;
+			yi = listPoint[i + 1].y;
+		}
+		EDGEX e(xmax,yi, dy);
+		ETX[xmin].push_back(e);
+		if (xmax > XMAX)
+		{
+			XMAX = xmax;
+		}
+	}
+	// 第一个点与最后一个点所构成的边
+	int index = listPoint.size() - 1;
+	if (listPoint[0].x!= listPoint[index].x)
+	{
+		float dy = listPoint[index].y- listPoint[0].y == 0 ? 0 : 1.0/( (listPoint[index].x - listPoint[0].x)*1.0 / (listPoint[index].y - listPoint[0].y));
+		// xi低端点的x值，x高端点的x值
+		float xmax, yi, xmin;
+		if (listPoint[index].x > listPoint[0].x)
+		{
+			xmax = listPoint[index].x;
+			xmin = listPoint[0].x;
+			yi = listPoint[0].y;
+		}
+		else
+		{
+			xmax = listPoint[0].x;
+			xmin = listPoint[index].x;
+			yi = listPoint[index].y;
+		}
+		EDGEX e(xmax, yi, dy);
+		ETX[xmin].push_back(e);
+	}
+}
+// 更新ET
+void UpdateXET()
+{
+	for (auto it = ETX.begin();it != ETX.end();)
+	{
+		// 只存在一条边
+		if (it->second.size() == 1)
+		{
+			EDGEX e = *(it->second.begin());
+			e.yi += e.dy;
+			// 这里处理矛盾
+			int xmin = it->first + 1;
+			ETX.erase(it++);
+			ETX[xmin].push_back(e);
+		}
+		else
+		{
+			it++;
+		}
+	}
+}
+// 对AET表排序
+void ModifyXAET()
+{
+	// 建立活动边表
+	//创建活动边表并填充
+	std::list<EDGEX>AET;
+	int x = 0;
+	int count = 0;
+	//获取首元素
+	x = ETX.begin()->first;
+	//cout << "x is " << x << endl;
+	//cout << " XMAX IS " << XMAX << " " << endl;
+	AET.insert(AET.begin(), ETX.begin()->second.begin(), ETX.begin()->second.end());
+	AET.sort();
+	do {
+		auto node = AET.begin();
+		while (node != AET.end())
+		{
+			// 获取与扫描线交点的值
+			float y1 = node->yi;
+			// 
+			node->yi += node->dy;
+			node++;
+			if (node != AET.end())
+			{
+				float y2 = node->yi;
+				node->yi += node->dy;
+				node++;
+				if (y1 != y2)
+				{
+					vector<MyPoint>listp;
+
+					listp.push_back(MyPoint(x, y1));
+					listp.push_back(MyPoint(x, y2));
+					IntePoint.insert(pair<int, vector<MyPoint>>(count, listp));
+					count++;
+				}
+				//cout << "x: " << x << " y1: " << y1 << " y2: " << y2 << " " << endl;
+				/*while (x1 < x2)
+				{
+					glVertex2f(x1, y);
+					//IntePoint.push_back(CPoint(x1, y));
+					x1++;
+				}*/
+			}
+		}
+		x++;
+		// 逆序迭代器，指向c容器的最后一个元素
+		// 如果y大于ymax，表示扫描线大于最大y值
+		std::list<EDGEX>::reverse_iterator it = AET.rbegin();
+		for (; it != AET.rend();) {
+			if (x > it->xmax)
+				it = std::list<EDGEX>::reverse_iterator(AET.erase((++it).base()));
+			else it++;
+		}
+		// 找到扫描线对应的活性表
+		auto itt = ETX.find(x);
+		if (itt != ETX.end())
+			AET.insert(AET.end(), ETX[x].begin(), ETX[x].end());
+		AET.sort();
+		// 如过y大于YMAX,直接退出
+	} while ((x < XMAX));
 }

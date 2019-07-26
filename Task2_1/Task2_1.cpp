@@ -162,7 +162,6 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
-
 // 用于运行对话框的应用程序命令
 void CTask21App::OnAppAbout()
 {
