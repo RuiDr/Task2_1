@@ -14,10 +14,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-
 // CTask21App
-
 BEGIN_MESSAGE_MAP(CTask21App, CWinApp)
 	ON_COMMAND(ID_APP_ABOUT, &CTask21App::OnAppAbout)
 	// 基于文件的标准文档命令
@@ -26,10 +23,7 @@ BEGIN_MESSAGE_MAP(CTask21App, CWinApp)
 	// 标准打印设置命令
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinApp::OnFilePrintSetup)
 END_MESSAGE_MAP()
-
-
 // CTask21App 构造
-
 CTask21App::CTask21App() noexcept
 {
 	// 支持重新启动管理器

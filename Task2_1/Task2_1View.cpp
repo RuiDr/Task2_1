@@ -37,8 +37,19 @@ void GetNET();
 // 更新ET，将特殊点进行特殊处理
 void UpdateET();
 void ModifyAET();
+struct MyPoint
+{
+	float x;
+	float y;
+	MyPoint(float x1,float y)
+	{
+		this->x = x1;
+		this->y = y;
+	}
+	
+};
 // 交点
-map<int,vector<CPoint>>IntePoint;
+map<int,vector<MyPoint>>IntePoint;
 // CTask21View
 // 边的数据结构体
 typedef struct tagEDGE
@@ -81,7 +92,6 @@ CTask21View::CTask21View() noexcept
 	// TODO: 在此处添加构造代码
 
 }
-
 CTask21View::~CTask21View()
 {
 }
@@ -93,7 +103,6 @@ BOOL CTask21View::PreCreateWindow(CREATESTRUCT& cs)
 
 	return CView::PreCreateWindow(cs);
 }
-
 // CTask21View 绘图
 
 void CTask21View::OnDraw(CDC* /*pDC*/)
@@ -105,8 +114,6 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 
 	// TODO: 在此处为本机数据添加绘制代码
 }
-
-
 // CTask21View 打印
 
 BOOL CTask21View::OnPreparePrinting(CPrintInfo* pInfo)
@@ -114,18 +121,14 @@ BOOL CTask21View::OnPreparePrinting(CPrintInfo* pInfo)
 	// 默认准备
 	return DoPreparePrinting(pInfo);
 }
-
 void CTask21View::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: 添加额外的打印前进行的初始化过程
 }
-
 void CTask21View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: 添加打印后进行的清理过程
 }
-
-
 // CTask21View 诊断
 
 #ifdef _DEBUG
@@ -237,18 +240,18 @@ void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 	// 定义一个画笔变量
 	CPen penBlack;
 	CDC*pDC = GetDC();
-	penBlack.CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+	penBlack.CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 	CPen*poldPen = pDC->SelectObject(&penBlack);
 	// 上次的点
 	CPoint tempPoint=cpoint;
 	// 这次的点
 	cpoint = point;
-	pDC->SetPixel(point, RGB(0, 0, 0));
+	//pDC->SetPixel(point, RGB(1, 0, 0));
 	if (sum != 0)
 	{
 		// 将当前点加入到点存储器中
 		freopen("CONOUT$", "w+t", stdout);// 申请写
-		cout << point.x << " " << point.y << endl;
+		cout <<"point: "<< point.x << " " << point.y << endl;
 		freopen("CONIN$", "r+t", stdin);  // 申请读
 		listPoint.push_back(point);
 		pDC->MoveTo(tempPoint.x, tempPoint.y);
@@ -257,7 +260,7 @@ void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 	else
 	{
 		freopen("CONOUT$", "w+t", stdout);// 申请写
-		cout << point.x << " " << point.y << endl;
+		cout <<"point: "<< point.x << " " << point.y << endl;
 		freopen("CONIN$", "r+t", stdin);  // 申请读
 		listPoint.push_back(point);
 		firstpoint = point;
@@ -289,11 +292,17 @@ void CTask21View::OnErase()
 	{
 		cout << it->x << " " << it->y << endl;
 	}
-
 	freopen("CONIN$", "r+t", stdin);  // 申请读
-
 	sum = 0;
-	map<int, vector<CPoint>>IntePoint;
+	map<int, vector<MyPoint>>IntePoint1;
+	map<int, list<EDGE>>ET1;
+	vector<CPoint>listPoint1;
+	IntePoint=IntePoint1;
+	listPoint = listPoint1;
+	ET=ET1;
+	YMAX = 0;
+	cout << "ET " << ET.size() << endl;
+	cout << "listPoint " << listPoint.size() << endl;
 	Invalidate();
 	// TODO: 在此添加命令处理程序代码
 }
@@ -307,7 +316,17 @@ void GetNET()
 		if (listPoint[i + 1].y == listPoint[i].y)
 			continue;
 		// 斜率的倒数
-		float dx = listPoint[i + 1].y - listPoint[i].y == 0 ? 0 : (listPoint[i + 1].x - listPoint[i].x) / (listPoint[i + 1].y - listPoint[i].y);
+		float dx=0;
+		double a = listPoint[i + 1].y - listPoint[i].y;
+		if (a == 0)
+		{
+			 dx = 0.0;
+		}
+		else
+		{
+			 dx = (listPoint[i + 1].x - listPoint[i].x)*1.0 / (listPoint[i + 1].y - listPoint[i].y);
+
+		}
 		// xi低端点的x值，x高端点的x值
 		float ymax, xi, ymin;
 		if (listPoint[i + 1].y > listPoint[i].y)
@@ -333,7 +352,7 @@ void GetNET()
 	int index = listPoint.size() - 1;
 	if (listPoint[0].y != listPoint[index].y)
 	{
-		float dx = listPoint[index].y - listPoint[0].y == 0 ? 0 : (listPoint[index].x - listPoint[0].x) / (listPoint[index].y - listPoint[0].y);
+		float dx = listPoint[index].y - listPoint[0].y == 0 ? 0 : (listPoint[index].x - listPoint[0].x)*1.0 / (listPoint[index].y - listPoint[0].y);
 		// xi低端点的x值，x高端点的x值
 		float ymax, xi, ymin;
 		if (listPoint[index].y > listPoint[0].y)
@@ -370,7 +389,6 @@ void UpdateET()
 		else
 		{
 			it++;
-
 		}
 	}
 }
@@ -398,6 +416,7 @@ void ModifyAET()
 	//获取首元素
 	y = ET.begin()->first;
 	cout << "y is " << y << endl;
+	cout << " YMAX IS " << YMAX <<" "<< endl;
 	AET.insert(AET.begin(), ET.begin()->second.begin(), ET.begin()->second.end());
 	AET.sort();
 	//glBegin(GL_POINTS);
@@ -417,10 +436,11 @@ void ModifyAET()
 			    node++;
 				if (x1 != x2) 
 				{
-					vector<CPoint>listp;
-					listp.push_back(CPoint(x2-1, y));
-					listp.push_back(CPoint(x1, y));
-					IntePoint.insert(pair<int, vector<CPoint>>(count, listp));
+					vector<MyPoint>listp;
+					
+					listp.push_back(MyPoint(x1, y));
+					listp.push_back(MyPoint(x2, y));
+					IntePoint.insert(pair<int, vector<MyPoint>>(count, listp));
 					count++;
 				}
 				cout << "x1: " << x1 << " x2: " << x2 << " y: " << y<<" "<<endl;
@@ -447,13 +467,18 @@ void ModifyAET()
 			AET.insert(AET.end(), ET[y].begin(), ET[y].end());
 		AET.sort();
 		// 判断有问题
-	} while ((!AET.empty())&&(y<YMAX));
+	} while ((y<YMAX));
 	//glEnd();
 }
 void CTask21View::OnFilledWith()
 {
 	// TODO: 在此添加命令处理程序代码
 	// 初始化边表
+	/*listPoint.push_back(CPoint(40, 10));
+	listPoint.push_back(CPoint(30, 40));
+	listPoint.push_back(CPoint(60, 80));
+	listPoint.push_back(CPoint(80, 40));*/
+
 	GetNET();
 	// 更新边表
 	UpdateET();
@@ -462,16 +487,21 @@ void CTask21View::OnFilledWith()
 	ModifyAET();
 
 	CDC*pDC = GetDC();
+	AllocConsole();
+
+	freopen("CONOUT$", "w+t", stdout);// 申请写
+	cout << "大小 " << IntePoint.size() << endl;
 	for (auto it = IntePoint.begin();it != IntePoint.end();it++)
 	{
-		vector<CPoint>list = it->second;
-		for (int i = 0;i < list.size()-1;i++)
-		{
-			pDC->SetPixel(list[i], RGB(255, 0, 0));
-			pDC->MoveTo(list[i+1].x, list[i+1].y);
-			pDC->LineTo(list[i].x, list[i].y);
-		}
+		vector<MyPoint>list = it->second;
+
+		//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
+		//cout << "画线 " << list[0].x << " " << list[0].y<<" " << endl;
+		//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
+		pDC->MoveTo(list[0].x, list[0].y);
+		pDC->LineTo(list[1].x, list[1].y);
 	}
+	freopen("CONIN$", "r+t", stdin);  // 申请读
 /*
 	AllocConsole();
 	freopen("CONOUT$", "w+t", stdout);// 申请写
