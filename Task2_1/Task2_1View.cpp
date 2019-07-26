@@ -31,6 +31,7 @@ CPoint cpoint;
 CPoint firstpoint;
 int sum = 0;
 int dis = 0;
+int YMAX=0;
 void InitConsoleWindow();
 void GetNET();
 // 更新ET，将特殊点进行特殊处理
@@ -233,9 +234,15 @@ void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	
 	// 暂存的点
-	CPoint tempPoint=cpoint;
-	cpoint = point;
+	// 定义一个画笔变量
+	CPen penBlack;
 	CDC*pDC = GetDC();
+	penBlack.CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
+	CPen*poldPen = pDC->SelectObject(&penBlack);
+	// 上次的点
+	CPoint tempPoint=cpoint;
+	// 这次的点
+	cpoint = point;
 	pDC->SetPixel(point, RGB(0, 0, 0));
 	if (sum != 0)
 	{
@@ -293,11 +300,11 @@ void CTask21View::OnErase()
 // 初始化新边表结构
 void GetNET()
 {
-	listPoint.push_back(CPoint(50, 50));
-	listPoint.push_back(CPoint())
+	
 	for (int i = 0;i < listPoint.size() - 1;i++)
 	{
-		if (listPoint[i + 1].x == listPoint[i].x)
+		// 平行边，这里确定是x,还是y????????
+		if (listPoint[i + 1].y == listPoint[i].y)
 			continue;
 		// 斜率的倒数
 		float dx = listPoint[i + 1].y - listPoint[i].y == 0 ? 0 : (listPoint[i + 1].x - listPoint[i].x) / (listPoint[i + 1].y - listPoint[i].y);
@@ -317,8 +324,33 @@ void GetNET()
 		}
 		EDGE e(ymax, xi, dx);
 		ET[ymin].push_back(e);
+		if (ymax > YMAX)
+		{
+			YMAX = ymax;
+		}
 	}
 	// 第一个点与最后一个点所构成的边
+	int index = listPoint.size() - 1;
+	if (listPoint[0].y != listPoint[index].y)
+	{
+		float dx = listPoint[index].y - listPoint[0].y == 0 ? 0 : (listPoint[index].x - listPoint[0].x) / (listPoint[index].y - listPoint[0].y);
+		// xi低端点的x值，x高端点的x值
+		float ymax, xi, ymin;
+		if (listPoint[index].y > listPoint[0].y)
+		{
+			ymax = listPoint[index].y;
+			ymin = listPoint[0].y;
+			xi = listPoint[0].x;
+		}
+		else
+		{
+			ymax = listPoint[0].y;
+			ymin = listPoint[index].y;
+			xi = listPoint[index].x;
+		}
+		EDGE e(ymax, xi, dx);
+		ET[ymin].push_back(e);
+	}
 }
 // 更新ET，将特殊点进行特殊处理
 void UpdateET()
@@ -330,6 +362,7 @@ void UpdateET()
 		{
 			EDGE e = *(it->second.begin());
 			e.xi += e.dx;
+			// 这里处理矛盾
 			int ymin = it->first + 1;
 			ET.erase(it++);
 			ET[ymin].push_back(e);
@@ -382,11 +415,11 @@ void ModifyAET()
 				float x2 = node->xi;
 			    node->xi += node->dx;
 			    node++;
-				if (x1 != x2)
+				if (x1 != x2) 
 				{
 					vector<CPoint>listp;
+					listp.push_back(CPoint(x2-1, y));
 					listp.push_back(CPoint(x1, y));
-					listp.push_back(CPoint(x2, y));
 					IntePoint.insert(pair<int, vector<CPoint>>(count, listp));
 					count++;
 				}
@@ -404,7 +437,7 @@ void ModifyAET()
 		// 如果y大于ymax，表示扫描线大于最大y值
 		std::list<EDGE>::reverse_iterator it = AET.rbegin();
 		for (; it != AET.rend();) {
-			if (y >=it->ymax)
+			if (y >it->ymax)
 				it = std::list<EDGE>::reverse_iterator(AET.erase((++it).base()));
 			else it++;
 		}
@@ -413,7 +446,8 @@ void ModifyAET()
 		if (itt != ET.end())
 			AET.insert(AET.end(), ET[y].begin(), ET[y].end());
 		AET.sort();
-	} while (!AET.empty());
+		// 判断有问题
+	} while ((!AET.empty())&&(y<YMAX));
 	//glEnd();
 }
 void CTask21View::OnFilledWith()
@@ -431,10 +465,10 @@ void CTask21View::OnFilledWith()
 	for (auto it = IntePoint.begin();it != IntePoint.end();it++)
 	{
 		vector<CPoint>list = it->second;
-		for (int i = 1;i < list.size();i++)
+		for (int i = 0;i < list.size()-1;i++)
 		{
 			pDC->SetPixel(list[i], RGB(255, 0, 0));
-			pDC->MoveTo(list[i-1].x, list[i-1].y);
+			pDC->MoveTo(list[i+1].x, list[i+1].y);
 			pDC->LineTo(list[i].x, list[i].y);
 		}
 	}
