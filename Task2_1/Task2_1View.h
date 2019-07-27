@@ -3,13 +3,13 @@
 //
 
 #pragma once
-
-
+#define WM_MY_MESSAGE (WM_USER+100);
 class CTask21View : public CView
 {
 protected: // 仅从序列化创建
 	CTask21View() noexcept;
 	DECLARE_DYNCREATE(CTask21View)
+	afx_msg LRESULT OnMessage(WPARAM wParam, LPARAM IParam);
 
 // 特性
 public:
@@ -51,6 +51,9 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnErase();
 	afx_msg void OnFilledWith();
+	afx_msg void OnTestDialog();
+	// 消息处理函数
+ afx_msg LRESULT OnMyMessage(WPARAM wParam, LPARAM lParam);
 };
 
 #ifndef _DEBUG  // Task2_1View.cpp 中的调试版本

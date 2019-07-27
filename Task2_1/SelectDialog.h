@@ -1,7 +1,6 @@
 ﻿#pragma once
-
+#include "MainFrm.h"
 // SelectDialog 对话框
-
 class SelectDialog : public CDialogEx
 {
 	DECLARE_DYNAMIC(SelectDialog)
@@ -14,6 +13,7 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DIALOG1 };
 #endif
+#define WM_MY_MESSAGE (WM_USER+100);
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
@@ -24,4 +24,5 @@ public:
 	int checkbox1;
 	int checkbox2;
 	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedButton1();
 };

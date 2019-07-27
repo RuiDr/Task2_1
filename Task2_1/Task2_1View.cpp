@@ -12,7 +12,6 @@
 #ifndef SHARED_HANDLERS
 #include "Task2_1.h"
 #endif
-
 #include "Task2_1Doc.h"
 #include "Task2_1View.h"
 #include <string>
@@ -116,6 +115,7 @@ BEGIN_MESSAGE_MAP(CTask21View, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_COMMAND(ID_32771, &CTask21View::OnErase)
 	ON_COMMAND(ID_32772, &CTask21View::OnFilledWith)
+	ON_COMMAND(ID_32773, &CTask21View::OnTestDialog)
 END_MESSAGE_MAP()
 // CTask21View 构造/析构
 CTask21View::CTask21View() noexcept
@@ -710,4 +710,20 @@ void ModifyXAET()
 		AET.sort();
 		// 如过y大于YMAX,直接退出
 	} while ((x < XMAX));
+}
+
+void CTask21View::OnTestDialog()
+{
+	// TODO: 在此添加命令处理程序代码
+	SelectDialog *selectDialog=new SelectDialog();
+	selectDialog->Create(IDD_DIALOG1, NULL);
+	selectDialog->ShowWindow(SW_SHOW);
+}
+
+LRESULT CTask21View::OnMyMessage(WPARAM wParam, LPARAM lParam)
+{
+	// 用户自定义处理过程
+	CString s;
+	MessageBox(s);
+	return 0;   //  返回值为长整形
 }
