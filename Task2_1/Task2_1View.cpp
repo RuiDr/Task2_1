@@ -24,6 +24,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#define  MY_THREAD_MSG   WM_USER + 1000
 using namespace std;
 // 存放点的信息
 vector<CPoint>listPoint;
@@ -116,7 +117,20 @@ BEGIN_MESSAGE_MAP(CTask21View, CView)
 	ON_COMMAND(ID_32771, &CTask21View::OnErase)
 	ON_COMMAND(ID_32772, &CTask21View::OnFilledWith)
 	ON_COMMAND(ID_32773, &CTask21View::OnTestDialog)
+	ON_MESSAGE(WM_MyMessage, &CTask21View::OnMyMessage)
 END_MESSAGE_MAP()
+
+/*BEGIN_MESSAGE_MAP(CTask21View, CView)
+ON_WM_SYSCOMMAND()
+ON_WM_PAINT()
+ON_WM_QUERYDRAGICON()
+//ON_BN_CLICKED(IDC_BUTTON1,&CTask21View::OnBnClickedButton1)
+ON_MESSAGE(WM_MyMessage, &CTask21View::OnMyMessage)
+END_MESSAGE_MAP()*/
+
+
+	//}}AFX_MSG_MAP
+
 // CTask21View 构造/析构
 CTask21View::CTask21View() noexcept
 {
@@ -720,10 +734,101 @@ void CTask21View::OnTestDialog()
 	selectDialog->ShowWindow(SW_SHOW);
 }
 
+
+
+BOOL CTask21View::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if (pMsg->message == WM_MY_MESSAGE)
+	{CString str;
+		// 消息处理
+		/*
+		int a=pMsg->lParam;
+		GetMessage(pMsg->lParam);
+		*/
+		int a=-1;
+		int b = -1;
+		GetMessage(pMsg, NULL, a, b);
+		str.Format(_T("%d %d"), a,b);
+		MessageBox(str);
+	}
+	return CView::PreTranslateMessage(pMsg);
+}
 LRESULT CTask21View::OnMyMessage(WPARAM wParam, LPARAM lParam)
 {
-	// 用户自定义处理过程
-	CString s;
-	MessageBox(s);
-	return 0;   //  返回值为长整形
+	CString str;
+	int space = wParam;
+	int checkbox1 = lParam;
+	str.Format(_T("间距: %d 是否选择横线: %d"), space, checkbox1);
+	if (space == -1)
+	{
+		OnErase();
+	}
+	else
+	{
+		AfxMessageBox((str));
+
+		spaceBetween = space;
+		if (spaceBetween == 0)
+		{
+			spaceBetween = 1;
+		}
+		if (checkbox1 == 1)
+		{
+			GetNET();
+			UpdateET();
+			ModifyAET();
+			CDC*pDC = GetDC();
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "大小 " << IntePoint.size() << endl;
+			for (auto it = IntePoint.begin();it != IntePoint.end();it++)
+			{
+				vector<MyPoint>list = it->second;
+
+				//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
+				cout << "画线 " << list[0].x << " " << list[0].y << " " << endl;
+				//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
+				freopen("CONIN$", "r+t", stdin);  // 申请读
+
+				int flag = list[0].y;
+				if (flag % spaceBetween == 0)
+				{
+					pDC->MoveTo(list[0].x, list[0].y);
+					pDC->LineTo(list[1].x, list[1].y);
+				}
+			}
+		}
+		else
+		{
+			GetNetY();
+			// 更新边表
+
+			UpdateXET();
+			// 对AET表操作
+
+			ModifyXAET();
+
+			CDC*pDC = GetDC();
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "大小 " << IntePoint.size() << endl;
+			for (auto it = IntePoint.begin();it != IntePoint.end();it++)
+			{
+				vector<MyPoint>list = it->second;
+
+				//pDC->SetPixel(list[0].x, RGB(255, 0, 0));
+				cout << "画线 " << list[0].x << " " << list[0].y << " " << endl;
+				//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
+				freopen("CONIN$", "r+t", stdin);  // 申请读
+
+				int flag = list[0].x;
+				if (flag % spaceBetween == 0)
+				{
+					pDC->MoveTo(list[0].x, list[0].y);
+					pDC->LineTo(list[1].x, list[1].y);
+				}
+
+			}
+		}
+	}
+	return 0;
 }

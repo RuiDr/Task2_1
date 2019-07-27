@@ -41,7 +41,7 @@ BOOL CTask21Doc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())
 		return FALSE;
-
+	SetTitle(_T("Task2_1"));
 	// TODO: 在此添加重新初始化代码
 	// (SDI 文档将重用该文档)
 
