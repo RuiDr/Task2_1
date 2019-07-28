@@ -61,11 +61,18 @@ void SelectDialog::OnBnClickedButton1()
 
 }
 
-
+// 绘图
 void SelectDialog::OnBnClickedButton3()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CDialogEx::OnCancel();
+	//CDialogEx::OnCancel();
+	// TODO: 在此添加控件通知处理程序代码
+	// 是否按下按钮
+	drawflag = -2;
+	CMainFrame* pMF = (CMainFrame*)AfxGetApp()->m_pMainWnd;  //先通过获取当前框架指针
+	CView * active = pMF->GetActiveView();//才能获取当前视类指针
+	if (active != NULL)  //获取了当前视类指针才能发送消息
+		active->SendMessage(WM_MY_MESSAGE, drawflag, 0);   //使用PostMessage发送消息
 }
 
 

@@ -23,6 +23,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	// 绘图标志
+	int drawflag;
 	// 重绘标志
 	int draw;
 	int space;

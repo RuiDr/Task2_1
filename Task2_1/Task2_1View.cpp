@@ -30,6 +30,7 @@ using namespace std;
 vector<CPoint>listPoint;
 CPoint cpoint;
 CPoint firstpoint;
+int drawflag = 0;
 int sum = 0;
 int dis = 0;
 // y最大值
@@ -281,40 +282,48 @@ void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 	
 	// 暂存的点
 	// 定义一个画笔变量
-	CPen penBlack;
-	CDC*pDC = GetDC();
-	penBlack.CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
-	CPen*poldPen = pDC->SelectObject(&penBlack);
-	// 上次的点
-	CPoint tempPoint=cpoint;
-	// 这次的点
-	cpoint = point;
-	//pDC->SetPixel(point, RGB(1, 0, 0));
-	if (sum != 0)
+	if (drawflag == -2)
 	{
-		// 将当前点加入到点存储器中
-		freopen("CONOUT$", "w+t", stdout);// 申请写
-		cout <<"point: "<< point.x << " " << point.y << endl;
-		freopen("CONIN$", "r+t", stdin);  // 申请读
-		listPoint.push_back(point);
-		pDC->MoveTo(tempPoint.x, tempPoint.y);
-		pDC->LineTo(cpoint.x, cpoint.y);
+		CPen penBlack;
+		CDC*pDC = GetDC();
+		penBlack.CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+		CPen*poldPen = pDC->SelectObject(&penBlack);
+		// 上次的点
+		CPoint tempPoint = cpoint;
+		// 这次的点
+		cpoint = point;
+		//pDC->SetPixel(point, RGB(1, 0, 0));
+		if (sum != 0)
+		{
+			// 将当前点加入到点存储器中
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "point: " << point.x << " " << point.y << endl;
+			freopen("CONIN$", "r+t", stdin);  // 申请读
+			listPoint.push_back(point);
+			pDC->MoveTo(tempPoint.x, tempPoint.y);
+			pDC->LineTo(cpoint.x, cpoint.y);
+		}
+		else
+		{
+			freopen("CONOUT$", "w+t", stdout);// 申请写
+			cout << "point: " << point.x << " " << point.y << endl;
+			freopen("CONIN$", "r+t", stdin);  // 申请读
+			listPoint.push_back(point);
+			firstpoint = point;
+		}
+		dis = sqrt((firstpoint.x - cpoint.x)*(firstpoint.x - cpoint.x) + (firstpoint.y - cpoint.y)*(firstpoint.y - cpoint.y));
+		if (dis < 100)
+		{
+			pDC->MoveTo(firstpoint.x, firstpoint.y);
+			pDC->LineTo(cpoint.x, cpoint.y);
+		}
+		sum++;
 	}
 	else
 	{
-		freopen("CONOUT$", "w+t", stdout);// 申请写
-		cout <<"point: "<< point.x << " " << point.y << endl;
-		freopen("CONIN$", "r+t", stdin);  // 申请读
-		listPoint.push_back(point);
-		firstpoint = point;
+		MessageBox(_T("没有点击绘图哦！"));
 	}
-	dis = sqrt((firstpoint.x - cpoint.x)*(firstpoint.x - cpoint.x) + (firstpoint.y - cpoint.y)*(firstpoint.y - cpoint.y));
-	if (dis < 100)
-	{
-		pDC->MoveTo(firstpoint.x, firstpoint.y);
-		pDC->LineTo(cpoint.x, cpoint.y);
-	}
-	sum++;
+	
 	CView::OnLButtonDown(nFlags, point);
 }
 void InitConsoleWindow()
@@ -759,15 +768,18 @@ LRESULT CTask21View::OnMyMessage(WPARAM wParam, LPARAM lParam)
 	CString str;
 	int space = wParam;
 	int checkbox1 = lParam;
-	str.Format(_T("间距: %d 是否选择横线: %d"), space, checkbox1);
+	str.Format(_T("间距: %d ;  是否选择横线(0未选择，1选择): %d"), space, checkbox1);
 	if (space == -1)
 	{
 		OnErase();
 	}
+	else if (space == -2)
+	{
+		drawflag = -2;
+	}
 	else
 	{
 		AfxMessageBox((str));
-
 		spaceBetween = space;
 		if (spaceBetween == 0)
 		{
