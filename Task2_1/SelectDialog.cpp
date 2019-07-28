@@ -39,7 +39,7 @@ END_MESSAGE_MAP()*/
 // SelectDialog 消息处理程序
 void SelectDialog::OnBnClickedOk()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	// TODO: 在此添加控件通知处理程序代码Se
 	checkbox1 = ((CButton *)GetDlgItem(IDC_CHECK1))->GetCheck();
 	checkbox2 = ((CButton *)GetDlgItem(IDC_CHECK2))->GetCheck();
 	CDialogEx::OnOK();

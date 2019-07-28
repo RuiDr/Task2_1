@@ -356,6 +356,7 @@ void CTask21View::OnErase()
 	ETX = ET2;
 	YMAX = 0;
 	XMAX = 0;
+	drawflag = 0;
 	cout << "ET " << ET.size() << endl;
 	cout << "ETX " << ETX.size() << endl;
 	cout << "listPoint " << listPoint.size() << endl;
@@ -368,7 +369,7 @@ void GetNET()
 	
 	for (int i = 0;i < listPoint.size() - 1;i++)
 	{
-		// 平行边，这里确定是x,还是y????????
+		// 平行边判定
 		if (listPoint[i + 1].y == listPoint[i].y)
 			continue;
 		// 斜率的倒数
@@ -437,7 +438,6 @@ void UpdateET()
 		{
 			EDGE e = *(it->second.begin());
 			e.xi += e.dx;
-			// 这里处理矛盾
 			int ymin = it->first + 1;
 			ET.erase(it++);
 			ET[ymin].push_back(e);
@@ -464,7 +464,6 @@ int getIndex(CPoint c1,CPoint c2)
 void ModifyAET()
 {
 	// 建立活动边表
-
 	//创建活动边表并填充
 	std::list<EDGE>AET;
 	int y = 0;
@@ -476,19 +475,19 @@ void ModifyAET()
 	AET.insert(AET.begin(), ET.begin()->second.begin(), ET.begin()->second.end());
 	AET.sort();
 	do {
-		auto node = AET.begin();
-		while (node != AET.end())
+		auto aet = AET.begin();
+		while (aet != AET.end())
 		{
 			// 获取与扫描线交点的值
-			float x1 = node->xi;
+			float x1 = aet->xi;
 			// 
-			node->xi += node->dx;
-			node++;
-			if (node != AET.end())
+			aet->xi += aet->dx;
+			aet++;
+			if (aet != AET.end())
 			{
-				float x2 = node->xi;
-			    node->xi += node->dx;
-			    node++;
+				float x2 = aet->xi;
+				aet->xi += aet->dx;
+				aet++;
 				if (x1 != x2) 
 				{
 					vector<MyPoint>listp;
@@ -598,7 +597,7 @@ void GetNetY()
 {
 	for (int i = 0;i < listPoint.size() - 1;i++)
 	{
-		// 平行边，这里确定是x,还是y????????
+		// 平行边判定
 		if (listPoint[i + 1].x == listPoint[i].x)
 			continue;
 		// 斜率的倒数
@@ -693,19 +692,19 @@ void ModifyXAET()
 	AET.insert(AET.begin(), ETX.begin()->second.begin(), ETX.begin()->second.end());
 	AET.sort();
 	do {
-		auto node = AET.begin();
-		while (node != AET.end())
+		auto aet = AET.begin();
+		while (aet != AET.end())
 		{
 			// 获取与扫描线交点的值
-			float y1 = node->yi;
+			float y1 = aet->yi;
 			// 
-			node->yi += node->dy;
-			node++;
-			if (node != AET.end())
+			aet->yi += aet->dy;
+			aet++;
+			if (aet != AET.end())
 			{
-				float y2 = node->yi;
-				node->yi += node->dy;
-				node++;
+				float y2 = aet->yi;
+				aet->yi += aet->dy;
+				aet++;
 				if (y1 != y2)
 				{
 					vector<MyPoint>listp;
