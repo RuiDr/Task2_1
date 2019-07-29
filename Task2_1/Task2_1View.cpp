@@ -157,10 +157,7 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 {
 	//Invalidate();
 	// 画多边形
-	CPen penBlack;
-	CDC*pDC = GetDC();
-	penBlack.CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
-	CPen*poldPen = pDC->SelectObject(&penBlack);
+
 	CTask21Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -171,6 +168,10 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 	cout << "大小 " << IntePoint.size() << endl;
 	if (listPoint.size() != 0)
 	{
+		CPen penBlack;
+		CDC*pDC = GetDC();
+		penBlack.CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+		CPen*poldPen = pDC->SelectObject(&penBlack);
 		for (int i = 0;i < listPoint.size() - 1;i++)
 		{
 			pDC->MoveTo(listPoint[i].x, listPoint[i].y);
@@ -180,6 +181,7 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 		pDC->MoveTo(listPoint[0].x, listPoint[0].y);
 		pDC->LineTo(listPoint[index].x, listPoint[index].y);
 	}
+	CDC*pDC = GetDC();
 	if (checkbox1 == 1)
 	{
 		for (auto it = IntePoint.begin();it != IntePoint.end();it++)
@@ -191,7 +193,7 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 			//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
 			freopen("CONIN$", "r+t", stdin);  // 申请读
 
-			int flag = list[0].x;
+			int flag = list[0].y;
 			if (flag % spaceBetween == 0)
 			{
 				pDC->MoveTo(list[0].x, list[0].y);
@@ -211,7 +213,7 @@ void CTask21View::OnDraw(CDC* /*pDC*/)
 			//cout << "画线 " << list[1].x << " " << list[1].y << " " << endl;
 			freopen("CONIN$", "r+t", stdin);  // 申请读
 
-			int flag = list[0].y;
+			int flag = list[0].x;
 			if (flag % spaceBetween == 0)
 			{
 				pDC->MoveTo(list[0].x, list[0].y);
@@ -375,7 +377,7 @@ void CTask21View::OnLButtonDown(UINT nFlags, CPoint point)
 			firstpoint = point;
 		}
 		dis = sqrt((firstpoint.x - cpoint.x)*(firstpoint.x - cpoint.x) + (firstpoint.y - cpoint.y)*(firstpoint.y - cpoint.y));
-		if (dis < 100)
+		if (dis < 50)
 		{
 			pDC->MoveTo(firstpoint.x, firstpoint.y);
 			pDC->LineTo(cpoint.x, cpoint.y);
